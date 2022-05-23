@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+
+  <head>
+    <title>WebCam</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <style>
+      html,
+      body {
+        height: 100%;
+        position: relative;
+      }
+
+      .camera {
+        height: 400px;
+      }
+
+      .person {
+        height: 220px;
+      }
+    </style>
+  </head>
+
+  <body class="bg-light h-100">
+    <div class="container h-100">
+      <div class="row justify-content-center align-items-center h-100">
+        <!-- col -->
+        <div class="col-md-12 col-lg-8">
+          <div class="camera d-flex align-items-center justify-content-center bg-warning text-white rounded">
+            <img src="{{ url_for('video_feed') }}" width="100%">
+          </div>
+        </div>
+        <!-- col -->
+        <!-- col -->
+        <div class="col-md-12 col-lg-4">
+         
+          <div class="person d-flex align-items-center justify-content-center bg-success text-white rounded">
+            Person View
+          </div>
+          <div class="card card-body mt-4" id="div-name">
+            Name
+          
+          </div>
+          <div class="card card-body mt-4">
+            Verified/No Match
+          </div>
+
+          <div class="card card-body mt-4">
+            <a href="http://localhost:5000/info/">Add New Person</a>
+          </div>
+        </div>
+        <!-- col -->
+      </div>
+    </div>
+  </body>
+
+  <script>
+     setTimeout(function(){
+        //document.getElementById("div-name").innerHTML='<%=session["username"] %>';
+      }, 5000);
+  </script>
+
+</html>
