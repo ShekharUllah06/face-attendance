@@ -1,6 +1,7 @@
 
 
 from unicodedata import name
+from xmlrpc.client import DateTime
 from flask import Flask, render_template, Response,url_for, request,redirect
 
 import cv2
@@ -15,16 +16,14 @@ from urllib.parse import quote
 
 from sqlalchemy import Table, Column, Integer, String, MetaData
 from adodbapi import Timestamp
-
+import datetime;
 
 from werkzeug.utils import secure_filename
 import os
-from datetime import datetime
-SESSION_TYPE = 'redis'
+from datetime import datetime,date
+
 app=Flask(__name__)
 app.config.from_object(__name__)
-#Session(app)
-
 
 
 
@@ -43,6 +42,14 @@ std  = Table(
    Column('user_name', VARCHAR), 
    Column('image_url', VARCHAR)
 )
+
+attendance  = Table(
+   'attendance', meta, 
+   Column('attendance_id', Integer, primary_key = True), 
+   Column('user_id', Integer), 
+   Column('time_date', String), 
+)
+
 name_="unknown"
 
 #UPLOAD_FOLDER = '/UPLOAD_FOLDER/'
@@ -53,7 +60,34 @@ ALLOWED_EXTENSIONS = set(['jpg','jpeg','png','JPG','JPEG','PNG'])
 def allowed_file(filename):
     return '.' in filename and \
            filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+           
+def getId(stdname):
+    conn = database_connection.connect()
+    query = std.select()
+    query = query.where(std.c.user_name==stdname)
+    result = conn.execute(query)
+    for row in result:
+        return row['user_id']
 
+
+def insertAttendance(id):
+    if checkAttendance(id)==0:
+        ins = attendance.insert().values(user_id = id,time_date=date.today())
+        conn = database_connection.connect()
+        result = conn.execute(ins)
+
+def checkAttendance(id):
+    conn = database_connection.connect()
+    query = attendance.select()
+    query = query.where(attendance.c.time_date==date.today(),attendance.c.user_id == id)
+    #attendance.query.filter_by(user_input=query, location = location).first()
+    result = conn.execute(query)
+    count=0
+    for row in result:
+        count=1
+        break
+    return count
+        
 def findEncodings(images):
     encodeList = []
 
@@ -163,6 +197,8 @@ def gen_frames():
                     name_=name
                     
                 face_names.append(name)
+                #print(getId())
+                insertAttendance(getId(name))
             
 
             # Display the results
@@ -203,14 +239,20 @@ def settings():
       #userImage = request.form['txtImage']
       
       file = request.files['txtImage']
-      ins = std.insert().values(user_name = user,image_url=file.filename)
-      conn = database_connection.connect()
-      result = conn.execute(ins)
+      
       if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
+        extension = os.path.splitext(filename)[1][1:].strip() 
         if not os.path.exists(app.config["UPLOAD_FOLDER"]):
             os.makedirs(app.config["UPLOAD_FOLDER"])
-        file.save(os.path.join(app.config["UPLOAD_FOLDER"], filename))
+        
+        newimagename=user+'.'+extension
+        #print(newimagename)
+        file.save(os.path.join(app.config["UPLOAD_FOLDER"], newimagename))
+        
+        ins = std.insert().values(user_name = user,image_url=newimagename)
+        conn = database_connection.connect()
+        result = conn.execute(ins)
       #print(userImage)
       return redirect(url_for('success',name = user))
    else:
