@@ -218,8 +218,11 @@ def gen_frames():
 
                 # Draw a label with a name below the face
                 status="not verified"
+                insertStatus1=insertStatus
                 if name!="Unknown":
                     status="verified"
+                else:
+                    insertStatus1="no attendance"
                 
                 cv2.rectangle(frame, (left, bottom - 35), (right, bottom), (0, 0, 255), cv2.FILLED)
                 font = cv2.FONT_HERSHEY_DUPLEX
@@ -227,7 +230,7 @@ def gen_frames():
                 cv2.rectangle(frame, (left, bottom + 40), (right, bottom), (255, 255, 255), cv2.FILLED)
                 cv2.putText(frame, "Status: "+status, (left + 6, bottom+25 ), font, .5, (20,128,0), 1)
                 cv2.rectangle(frame, (left, top - 30), (right, top-1), (0, 0, 255), cv2.FILLED)
-                cv2.putText(frame, insertStatus, (left +6, top-6 ), font, .5, (255, 255, 255), 1)
+                cv2.putText(frame, insertStatus1, (left +6, top-6 ), font, .5, (255, 255, 255), 1)
                 
                 #overlay image
 
