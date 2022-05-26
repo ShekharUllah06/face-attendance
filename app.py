@@ -2,7 +2,7 @@
 
 from unicodedata import name
 from xmlrpc.client import DateTime
-from flask import Flask, render_template, Response,url_for, request,redirect
+from flask import Flask, render_template, Response,url_for, request,redirect,session,current_app
 
 import cv2
 import face_recognition
@@ -22,9 +22,10 @@ from werkzeug.utils import secure_filename
 import os
 from datetime import datetime,date
 
+
 app=Flask(__name__)
 app.config.from_object(__name__)
-
+app.secret_key = 'BAD_SECRET_KEY'
 
 
 meta = MetaData()
@@ -51,7 +52,7 @@ attendance  = Table(
 )
 
 name_="unknown"
-
+insertStatus="Attendance Given"
 #UPLOAD_FOLDER = '/UPLOAD_FOLDER/'
 app.config["UPLOAD_FOLDER"] = "Training_images"
 #base_path = os.path.abspath(os.path.dirname(__file__))
@@ -75,6 +76,7 @@ def insertAttendance(id):
         ins = attendance.insert().values(user_id = id,time_date=date.today())
         conn = database_connection.connect()
         result = conn.execute(ins)
+        insertStatus="Atendance Success"
 
 def checkAttendance(id):
     conn = database_connection.connect()
@@ -151,6 +153,8 @@ process_this_frame = True
 
 
 def gen_frames():  
+    
+    
     path = 'Training_images'
     images = []
     classNames = []
@@ -213,9 +217,22 @@ def gen_frames():
                 cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
 
                 # Draw a label with a name below the face
+                status="not verified"
+                if name!="Unknown":
+                    status="verified"
+                
                 cv2.rectangle(frame, (left, bottom - 35), (right, bottom), (0, 0, 255), cv2.FILLED)
                 font = cv2.FONT_HERSHEY_DUPLEX
                 cv2.putText(frame, name, (left + 6, bottom - 6), font, 1.0, (255, 255, 255), 1)
+                cv2.rectangle(frame, (left, bottom + 40), (right, bottom), (255, 255, 255), cv2.FILLED)
+                cv2.putText(frame, "Status: "+status, (left + 6, bottom+25 ), font, .5, (20,128,0), 1)
+                cv2.rectangle(frame, (left, top - 30), (right, top-1), (0, 0, 255), cv2.FILLED)
+                cv2.putText(frame, insertStatus, (left +6, top-6 ), font, .5, (255, 255, 255), 1)
+                
+                #overlay image
+
+                
+                # end overlay image
                 
             ret, buffer = cv2.imencode('.jpg', frame)
             frame = buffer.tobytes()
@@ -225,10 +242,17 @@ def gen_frames():
 
 @app.route('/')
 def index():
-    return render_template('index.html',utc_dt=name_)
+    return render_template('index.html',utc_dt="shekhar")
 @app.route('/video_feed')
 def video_feed():
     return Response(gen_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
+
+@app.route('/result')
+def result():
+    data = {'name': 'nabin khadka'}
+    # return jsonify(data)
+    return render_template("result.html",result = data)
+
 @app.route('/info/')
 def addInfo():
     return render_template('settings.html')
